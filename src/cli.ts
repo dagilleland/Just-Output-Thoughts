@@ -1,51 +1,64 @@
-// src/cli.ts (ESM, TypeScript)
-import { join } from "node:path";
-import { mkdirSync } from "node:fs";
-import { createRequire } from "node:module";
-import envPaths from "env-paths";
+// src/cli.ts
+import { Command } from "commander";
+import inquirer from "inquirer";
+import { getDb, addThought, listThoughts, softDelete } from "./jotRepo.js";
 
-// ---- config you might reuse across CLIs ----
-const APP_NAME = "my-cli";              // used for env-paths + DB filename
-const DB_FILE  = `${APP_NAME}.db`;      // keep simple and predictable
+const program = new Command();
 
-// Load DatabaseSync via createRequire (tooling-safe, Node-native only)
-const require = createRequire(import.meta.url);
-type DatabaseSyncOptions = { readOnly?: boolean };
-type Statement<T=any> = {
-  run(...a: any[]): { changes?: number };
-  all(...a: any[]): T[];
-  get(...a: any[]): T | undefined;
-};
-type DatabaseSync = new (file: string, opts?: DatabaseSyncOptions) => {
-  exec(sql: string): void;
-  prepare<T=any>(sql: string): Statement<T>;
-  close(): void;
-};
-const { DatabaseSync } = require("node:sqlite") as { DatabaseSync: DatabaseSync };
+program
+  .name("jot")
+  .description("Just-Output-Thoughts — jot quick notes to a local SQLite DB")
+  .argument("[text...]", "Your thought to jot (free text).")
+  .option("-l, --list [num]", "List the last N thoughts (default 7). Use -1 for unlimited.", (v) => parseInt(v, 10))
+  .option("-d, --delete <id>", "Delete a thought by its numeric id (soft delete).", (v) => parseInt(v, 10))
+  .option("-y, --yes", "Skip confirmation prompts (unsafe).")
+  .showHelpAfterError();
 
-// Resolve per-user data dir and DB path
-const dataDir = process.env[`${APP_NAME.replace(/[^A-Za-z0-9_]/g, "_").toUpperCase()}_DATA_DIR`]
-  ?? envPaths(APP_NAME, { suffix: "" }).data;
+program.action(async (textParts: string[], opts) => {
+  const db = getDb();
 
-mkdirSync(dataDir, { recursive: true });
-const dbPath = join(dataDir, DB_FILE);
+  if (textParts?.length) {
+    const text = textParts.join(" ").trim();
+    if (!text) {
+      console.error("Nothing to jot. Provide some text.");
+      process.exitCode = 1;
+    } else {
+      const id = addThought(db, text);
+      console.log(`📝 Jotted #${id}: ${text}`);
+    }
+  }
 
-// --- sanity: open DB, do tiny R/W, print path ---
-const db = new DatabaseSync(dbPath);
-try {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS kv (
-      k TEXT PRIMARY KEY,
-      v TEXT
-    ) STRICT;
-  `);
-  db.prepare("INSERT INTO kv (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v=excluded.v")
-    .run("hello", "world");
+  if (Number.isFinite(opts.delete)) {
+    let proceed = !!opts.yes;
+    if (!proceed) {
+      const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
+        { type: "confirm", name: "confirm", message: `Delete thought #${opts.delete}?`, default: false }
+      ]);
+      proceed = confirm;
+    }
+    if (proceed) {
+      const ok = softDelete(db, Number(opts.delete));
+      console.log(ok ? `🗑️  Deleted #${opts.delete}` : `⚠️  Thought #${opts.delete} not found or already deleted`);
+    } else {
+      console.log("Deletion canceled.");
+    }
+  }
 
-  const row = db.prepare<{ v: string }>("SELECT v FROM kv WHERE k = ?").get("hello");
-  const value = row?.v ?? "(missing)";
-  console.log(`[my-cli] SQLite OK at: ${dbPath}`);
-  console.log(`[my-cli] hello → ${value}`);
-} finally {
-  db.close();
-}
+  if (opts.list !== undefined) {
+    const n = opts.list === true || Number.isNaN(opts.list) ? 7 : Number(opts.list);
+    const rows = listThoughts(db, n);
+    if (rows.length === 0) {
+      console.log("No thoughts yet. Try: jot your first thought");
+      return;
+    }
+    for (const r of rows) {
+      console.log(`#${r.id}  ${r.text}  ·  ${r.created_at}`);
+    }
+  }
+
+  if (!textParts?.length && opts.list === undefined && opts.delete === undefined) {
+    program.help({ error: false });
+  }
+});
+
+program.parseAsync();

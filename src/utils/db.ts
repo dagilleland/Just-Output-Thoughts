@@ -30,7 +30,7 @@ type DatabaseSyncCtor = new (file: string, opts?: DatabaseSyncOptions) => {
    */
   prepare<T = any>(sql: string): {
     /** Execute an INSERT/UPDATE/DELETE and return the change count (if any). */
-    run(...args: any[]): { changes?: number };
+    run(...args: any[]): { changes?: number; lastInsertRowid?: number };
     /** Execute a SELECT and return all rows. */
     all(...args: any[]): T[];
     /** Execute a SELECT and return the first row (or `undefined`). */
