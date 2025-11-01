@@ -6,9 +6,6 @@
   "bin": {
     "jot": "./bin/sqlite-launcher.mjs"
   },
-  "exports": {
-    ".": "./dist/cli.mjs"
-  },
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",

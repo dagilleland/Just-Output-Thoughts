@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 // Adjust the import path to wherever your helper lives:
-import { openUserDb } from "../../src/utils/db";
+import { openUserDb } from "../../src/utils/db.js";
 
 // --- Only run these tests if Node's built-in sqlite is present (Node ≥ 22.5) ---
 let hasNodeSqlite = true;
