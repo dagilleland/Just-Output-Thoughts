@@ -4,7 +4,7 @@ import { openUserDb } from "./utils/db.js";
 const APP = "jot";
 
 // Use the concrete return type of openUserDb to avoid importing node:sqlite types.
-type DB = ReturnType<typeof openUserDb>;
+export type DB = ReturnType<typeof openUserDb>;
 
 function ensureSchema(db: DB) {
   db.exec(`
@@ -53,4 +53,12 @@ export function softDelete(db: DB, id: number): boolean {
   );
   const info = stmt.run(id);
   return (info.changes ?? 0) > 0;
+}
+
+export function closeDb(db: DB) {
+  try {
+    db.close();
+  } catch {
+    /* ignore */
+  }
 }
