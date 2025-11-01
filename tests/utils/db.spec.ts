@@ -1,4 +1,6 @@
 // db.test.ts
+import { createRequire } from "node:module";
+
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -10,8 +12,8 @@ import { openUserDb } from "../../src/utils/db";
 // --- Only run these tests if Node's built-in sqlite is present (Node ≥ 22.5) ---
 let hasNodeSqlite = true;
 try {
-  // top-level await is fine in Vitest; if you prefer, switch to a beforeAll + dynamic import
-  await import("node:sqlite");
+  const require = createRequire(import.meta.url);
+  require("node:sqlite"); // will throw if flag not set / not available
 } catch {
   hasNodeSqlite = false;
 }
@@ -83,7 +85,7 @@ describe.runIf(hasNodeSqlite)("openUserDb (node:sqlite + env-paths)", () => {
 
 // If node:sqlite isn't available, provide a helpful skip note.
 describe.runIf(!hasNodeSqlite)("openUserDb (skipped)", () => {
-  it("skips because node:sqlite is unavailable (need Node ≥ 22.5)", () => {
+  it("skips other openUserDb tests because node:sqlite is unavailable (need Node ≥ 22.5)", () => {
     expect(true).toBe(true);
   });
 });
