@@ -4,7 +4,7 @@
   "description": "Just-Output-Thoughts — a tiny CLI to quickly jot notes to SQLite",
   "type": "module",
   "bin": {
-    "jot": "dist/cli.mjs"
+    "jot": "./bin/sqlite-launcher.mjs"
   },
   "exports": {
     ".": "./dist/cli.mjs"

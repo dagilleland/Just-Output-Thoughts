@@ -8,6 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   minify: false,
+  dts: false,
   banner: {
     js: "#!/usr/bin/env node"
   },
