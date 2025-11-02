@@ -40,6 +40,131 @@ To clear it later:
 
 ---
 
+## CLI Syntax — `jot`
+
+This section explains how the `jot` command interprets its arguments and flags across different shells.  
+It’s designed for **flag-first**, **free-text** input — no quotes required for simple notes.
+
+> *This syntax design keeps `jot` simple and predictable across shells — flags up front, everything else is your thought.* ✍️
+
+---
+
+### 1️⃣ Command structure
+
+```ps
+jot [flags...] [--] [your note text...]
+```
+
+- **Flags** must come **before** any note text.
+- **Note text** is everything that follows the first non-flag token.
+- The optional `--` tells `jot` to stop interpreting further tokens as flags —  
+  use it when your note contains words that start with `-`.
+
+---
+
+### 2️⃣ Common examples
+
+| Goal | Example |
+|------|----------|
+| Add a note | `jot Remember to pick up dry cleaning` |
+| List last 7 notes | `jot -l` |
+| List last 20 notes | `jot -l 20` |
+| Delete a note by ID | `jot -d 3` |
+| Add a note after listing flag (invalid — will warn) | `jot -l 5 this is ignored` |
+| Add a note that starts with `-` | `jot -- - this starts with a dash` |
+
+---
+
+### 3️⃣ Using quotes inside notes
+
+Different shells treat quotes differently.  
+If your note includes quotes, use the form appropriate for your shell:
+
+#### **Bash / Zsh / Linux / macOS Terminal**
+
+- Use single quotes around your note if it contains double quotes:
+
+```bash
+jot 'He said "ship it" today'
+```
+
+- Or escape the quotes:
+
+```bash
+jot He\ said\ "ship\ it"\ today
+```
+
+#
+### **PowerShell (Windows)**
+- Use backticks to escape quotes:
+
+```ps
+jot He said "ship it" today
+```
+
+- Or wrap in single quotes:
+
+```ps
+jot 'He said "ship it" today'
+```
+
+#
+### **Command Prompt (cmd.exe)**
+
+- Double the internal quotes:
+
+```cmd
+jot He said ""ship it"" today
+```
+
+---
+
+### 4️⃣ Stopping flag parsing (`--`)
+
+If your note begins with a dash or includes option-like tokens, use `--` to mark where the flags end:
+
+```ps
+jot -l 3 -- --literally this is part of the note
+```
+
+
+Everything after `--` is treated as plain text.
+
+---
+
+### 5️⃣ Summary of current flags
+
+| Flag | Description |
+|------|--------------|
+| `-l [num]` | List the last *N* thoughts (default 7; use `-1` for unlimited) |
+| `-d <id>` | Delete a thought by its numeric ID |
+| `-y` | Skip confirmation prompts |
+| `--` | End of flag parsing — treat all following tokens as note text |
+
+---
+
+### 6️⃣ Exit codes
+
+| Code | Meaning |
+|------|----------|
+| `0` | Success |
+| `1` | Invalid usage or other error (e.g., empty note) |
+
+---
+
+### 7️⃣ Tips
+
+- Put all flags **first**, note **last**.  
+  Example: `jot -l 5` ✅ but not `jot my note -l 5` ❌
+- If you accidentally include a flag-like token in your note without `--`,  
+  `jot` will warn and continue saving the note.
+- For automation or scripts, use `-y` to bypass confirmation prompts.
+
+---
+
+
+---
+
 ## 3️⃣ Run the CLI (locally, without installing)
 
 ### Add a thought
