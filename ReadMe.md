@@ -4,10 +4,20 @@ This little cli (`jot`) allows you to quickly capture thoughts in the terminal, 
 
 ## Installing
 
+> ***Node Notice:** This uses the experimental SQLite built into node. A special launcher is included to turn on the flag.*
+
 It's recommended to install this globally on your system.
 
 ```ps
 npm i -g @dagilleland/jot
+```
+
+You can test it out with the following commands.
+
+```ps
+jot "remember to circle back to the learning outcome guides"
+jot -l
+jot --help
 ```
 
 ## Running Locally
