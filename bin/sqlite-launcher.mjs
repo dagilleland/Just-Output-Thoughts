@@ -1,4 +1,4 @@
-// #!/usr/bin/env node
+#!/usr/bin/env node
 // bin/sqlite-launcher.mjs
 // Generic launcher: ensures Node's built-in SQLite is usable, then runs your real CLI entry.
 // Reuse anywhere. Point to the built entry via SQLITE_LAUNCH_TARGET or adjust RELATIVE_TARGET.
