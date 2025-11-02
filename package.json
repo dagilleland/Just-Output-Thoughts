@@ -1,6 +1,6 @@
 {
   "name": "@dagilleland/jot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Just-Output-Thoughts — a tiny CLI to quickly jot notes to SQLite",
   "type": "module",
   "bin": {
@@ -26,7 +26,12 @@
     "node": ">=22.5"
   },
   "license": "MIT",
-  "keywords": ["cli", "notes", "sqlite", "productivity"],
+  "keywords": [
+    "cli",
+    "notes",
+    "sqlite",
+    "productivity"
+  ],
   "dependencies": {
     "commander": "^12.1.0",
     "env-paths": "^3.0.0",
